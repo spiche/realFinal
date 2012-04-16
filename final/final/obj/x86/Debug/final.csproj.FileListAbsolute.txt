@@ -1,0 +1,16 @@
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\final.exe
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\final.pdb
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\Coding4Fun.Kinect.Wpf.dll
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\Microsoft.Expression.Drawing.dll
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\MainWindow.baml
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\MainWindow.g.cs
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\App.g.cs
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\final_MarkupCompile.cache
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\final.g.resources
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\final.Properties.Resources.resources
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\final.exe
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\obj\x86\Debug\final.pdb
