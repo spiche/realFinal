@@ -58,7 +58,7 @@ namespace final
             background.Height = 350;
             background.Width = 500;
 
-            changeBackground();
+            //changeBackground();
 
         }
 
@@ -67,6 +67,7 @@ namespace final
             //List of images:  space(0) aus(1) ball(2)
             //                  hawaii(3) london(4)
             int count = 0;
+
             ConsoleKeyInfo x = Console.ReadKey();
             if (x.Key.Equals(Key.Left))
             {
