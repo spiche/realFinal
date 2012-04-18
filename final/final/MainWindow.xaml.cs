@@ -22,21 +22,17 @@ namespace final
     public partial class MainWindow : Window
     {
 
-        //Timer time;
         BitmapImage space;
         BitmapImage aus;
         BitmapImage ball;
         BitmapImage hawaii;
         BitmapImage london;
-        
+
+        List<BitmapImage> images;        
 
         public MainWindow()
         {
             InitializeComponent();
-
-            //time = new Timer(3);
-            //time.Elapsed += new ElapsedEventHandler(applyBackground);
-            //time.Start();
 
 
             Uri src = new Uri(@"space.jpg", UriKind.Relative);
@@ -50,21 +46,61 @@ namespace final
             Uri src4 = new Uri(@"london.jpg", UriKind.Relative);
             london = new BitmapImage(src4);
 
+            images = new List<BitmapImage>();
+            images.Add(space);
+            images.Add(aus);
+            images.Add(ball);
+            images.Add(hawaii);
+            images.Add(london);
+
 
             background.Source = london;
             background.Height = 350;
             background.Width = 500;
 
+            changeBackground();
+
         }
 
-        //private void applyBackground(object source, ElapsedEventArgs e)
-        //{
-        //    time.Stop();
-        //    background.Height = 350;
-        //    background.Width = 500;
+        private void changeBackground()
+        {
+            //List of images:  space(0) aus(1) ball(2)
+            //                  hawaii(3) london(4)
+            int count = 0;
+            ConsoleKeyInfo x = Console.ReadKey();
+            if (x.Key.Equals(Key.Left))
+            {
+                if (count == 0)
+                {
+                    count = 4;
+                    background.Source = images.ElementAt(count);
+                }
+                else
+                {
+                    count--;
+                    background.Source = images.ElementAt(count);
+                }
+            }
+            if (x.Key.Equals(Key.Right))
+            {
+                if (count == 4)
+                {
+                    count = 0;
+                    background.Source = images.ElementAt(count);
+                }
+                else
+                {
+                    count++;
+                    background.Source = images.ElementAt(count);
+                }
+            }
+            else
+            {
+                //display message
+                MessageBox.Show("Use left or right arrows to change background");
+            }
+        }
 
-            
-        //}
 
     }
 }
