@@ -29,3 +29,7 @@ C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\final.
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\final.pdb
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Microsoft.Expression.Drawing.dll
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.dll
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\SkeletalTracking.exe
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.pdb
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\SkeletalTracking.pdb
