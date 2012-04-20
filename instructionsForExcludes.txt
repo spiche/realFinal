@@ -1,0 +1,9 @@
+git config --global core.excludesfile excludes.txt
+
+
+git rm --cached *.exe
+git rm --cached *.pdb
+git rm --cached *.suo
+git rm --cached *.jpg
+git rm --cached *.cache
+
