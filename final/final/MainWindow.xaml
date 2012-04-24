@@ -4,9 +4,9 @@
         Title="MainWindow" Height="500" Width="800" xmlns:my="clr-namespace:Microsoft.Samples.Kinect.WpfViewers;assembly=Microsoft.Samples.Kinect.WpfViewers" Loaded="Window_Loaded">
     <Grid>
         <Image Height="150" HorizontalAlignment="Left" Name="background" Stretch="Fill" VerticalAlignment="Top" Width="200" />
-        <my:KinectColorViewer HorizontalAlignment="Left" Margin="74,33,0,0" Name="kinectColorViewer1" VerticalAlignment="Top" Height="388" Width="664" Kinect="{Binding ElementName=kinectSensorChooser1, Path=Kinect}" IsTabStop="True" IsHitTestVisible="False">
-        </my:KinectColorViewer>
-        <my:KinectSensorChooser HorizontalAlignment="Left" Margin="438,281,0,0" Name="kinectSensorChooser1" VerticalAlignment="Top" Width="328" />
+        <my:KinectSensorChooser HorizontalAlignment="Left" Margin="212,235,0,0" Name="kinectSensorChooser1" VerticalAlignment="Top" Width="328" />
+        <Image Height="326" HorizontalAlignment="Left" Name="image1" Stretch="Fill" VerticalAlignment="Top" Width="454" />
+        <Image Height="200" HorizontalAlignment="Left" Name="image2" Stretch="Fill" VerticalAlignment="Top" Width="253" Margin="480,39,0,0" />
     </Grid>
 
 </Window>

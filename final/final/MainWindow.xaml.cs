@@ -74,10 +74,54 @@ namespace final
             background.Height = 500;
             background.Width = 800;
 
+            //image1.Height = 500;
+            //image1.Width = 800;
+
+
             //while (on)
             //{
             //    input();
             //}
+        }
+
+        private byte[] GenerateColoredBytes(DepthImageFrame depthFrame)
+        {
+            short[] rawDepthData = new short[depthFrame.PixelDataLength];
+            depthFrame.CopyPixelDataTo(rawDepthData);
+
+            Byte[] pixels = new byte[depthFrame.Height * depthFrame.Width * 4];
+
+            const int BlueIndex = 0;
+            const int GreenIndex = 1;
+            const int RedIndex = 2;
+
+            for (int depthIndex = 0, colorIndex = 0;
+                depthIndex < rawDepthData.Length && colorIndex < pixels.Length;
+                depthIndex++, colorIndex += 4)
+            {
+                int player = rawDepthData[depthIndex] & DepthImageFrame.PlayerIndexBitmask;
+                int depth = rawDepthData[depthIndex] >> DepthImageFrame.PlayerIndexBitmaskWidth;
+
+
+                if (player == 1 || player == 2)
+                {
+                    //do something with the pixels
+                    pixels[colorIndex + BlueIndex] = 255;
+                    pixels[colorIndex + GreenIndex] = 255;
+                    pixels[colorIndex + RedIndex] = 255;
+                }
+                else
+                {
+                    //non-player pixels are transparent
+                    pixels[colorIndex + BlueIndex] = 0;
+                    pixels[colorIndex + GreenIndex] = 0;
+                    pixels[colorIndex + RedIndex] = 0;
+                }
+
+
+            }
+            
+            return pixels;
         }
 
 
@@ -181,6 +225,38 @@ namespace final
             if (closing)
             {
                 return;
+            }
+
+            using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
+            {
+                if (colorFrame == null)
+                {
+                    return;
+                }
+
+                byte[] pixels = new byte[colorFrame.PixelDataLength];
+
+                //copy data out into our byte array
+                colorFrame.CopyPixelDataTo(pixels);
+                int stride = colorFrame.Width * 4;
+
+                image1.Source = BitmapSource.Create(colorFrame.Width, colorFrame.Height,
+                    96, 96, PixelFormats.Bgr32, null, pixels, stride);
+
+            }
+
+            using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
+            {
+                if (depthFrame == null)
+                {
+                    return;
+                }
+
+                byte[] pixels = GenerateColoredBytes(depthFrame);
+                int stride = depthFrame.Width * 4;
+
+                image2.Source = BitmapSource.Create(depthFrame.Width, depthFrame.Height,
+                    96, 96, PixelFormats.Bgr32, null, pixels, stride);
             }
 
             //Get a skeleton
