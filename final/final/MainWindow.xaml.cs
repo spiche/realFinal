@@ -32,7 +32,7 @@ namespace final
         bool on;
         ConsoleKeyInfo x;
 
-        List<BitmapImage> images;        
+        List<BitmapImage> images;
 
         public MainWindow()
         {
@@ -40,7 +40,7 @@ namespace final
 
         }
 
-
+        //KinectSensor _sensor;
         bool closing = false;
         const int skeletonCount = 6;
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
@@ -49,8 +49,9 @@ namespace final
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
 
+            /*
             on = true;
-
+            */
             Uri src = new Uri(@"space.jpg", UriKind.Relative);
             space = new BitmapImage(src);
             Uri src1 = new Uri(@"australia.jpg", UriKind.Relative);
@@ -69,13 +70,14 @@ namespace final
             images.Add(hawaii);
             images.Add(london);
 
+            background.Source = space;
             background.Height = 500;
             background.Width = 800;
 
-            while (on)
-            {
-                input();
-            }
+            //while (on)
+            //{
+            //    input();
+            //}
         }
 
 
@@ -154,10 +156,10 @@ namespace final
                 MaxDeviationRadius = 0.5f
             };
 
-            sensor.SkeletonStream.Enable(parameters);
-            sensor.SkeletonStream.Enable();
+            //            sensor.SkeletonStream.Enable(parameters);
+            //            sensor.SkeletonStream.Enable();
             sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+            //            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
             sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
             try
@@ -182,19 +184,20 @@ namespace final
             }
 
             //Get a skeleton
+            /*
             Skeleton first = GetFirstSkeleton(e);
 
             if (first == null)
             {
                 return;
             }
-
+            */
             //set scaled position
             //ScalePosition(headImage, first.Joints[JointType.Head]);
             //ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             //ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
 
-            GetCameraPoint(first, e);
+            //GetCameraPoint(first, e);
 
         }
 
@@ -247,7 +250,7 @@ namespace final
                 {
                     return null;
                 }
-                
+
                 skeletonFrameData.CopySkeletonDataTo(allSkeletons);
 
                 //get the first tracked skeleton
