@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Coding4Fun.Kinect.Wpf;
+using System.IO;
 
 
 namespace final
@@ -40,7 +41,6 @@ namespace final
 
         }
 
-        //KinectSensor _sensor;
         bool closing = false;
         const int skeletonCount = 6;
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
@@ -74,64 +74,69 @@ namespace final
             background.Height = 500;
             background.Width = 800;
 
-            //image1.Height = 500;
-            //image1.Width = 800;
+            image2.Height = 500;
+            image2.Width = 800;
 
-
-            //while (on)
-            //{
-            //    input();
-            //}
         }
 
-        private byte[] GenerateColoredBytes(DepthImageFrame depthFrame)
+        private byte[] GenerateColoredBytes(DepthImageFrame depthFrame, ColorImageFrame colorFrame)
         {
             short[] rawDepthData = new short[depthFrame.PixelDataLength];
             depthFrame.CopyPixelDataTo(rawDepthData);
 
-            Byte[] pixels = new byte[depthFrame.Height * depthFrame.Width * 4];
+            byte[] pixels = new byte[depthFrame.Height * depthFrame.Width * 4];
 
             const int BlueIndex = 0;
             const int GreenIndex = 1;
             const int RedIndex = 2;
+            const int AlphaIndex = 3;
+
+            byte[] pixelsColor = new byte[colorFrame.PixelDataLength];
+
+            colorFrame.CopyPixelDataTo(pixelsColor);
 
             for (int depthIndex = 0, colorIndex = 0;
-                depthIndex < rawDepthData.Length && colorIndex < pixels.Length;
-                depthIndex++, colorIndex += 4)
+                    depthIndex < rawDepthData.Length && colorIndex < pixels.Length;
+                    depthIndex++, colorIndex += 4)
             {
                 int player = rawDepthData[depthIndex] & DepthImageFrame.PlayerIndexBitmask;
-                int depth = rawDepthData[depthIndex] >> DepthImageFrame.PlayerIndexBitmaskWidth;
-
-
-                if (player == 1 || player == 2)
+                
+                if (player == 1)
                 {
-                    //do something with the pixels
-                    pixels[colorIndex + BlueIndex] = 255;
-                    pixels[colorIndex + GreenIndex] = 255;
-                    pixels[colorIndex + RedIndex] = 255;
+                    pixels[colorIndex + BlueIndex] = pixelsColor[colorIndex+BlueIndex];
+                    pixels[colorIndex + GreenIndex] = pixelsColor[colorIndex + GreenIndex];
+                    pixels[colorIndex + RedIndex] = pixelsColor[colorIndex + RedIndex];
+                    pixels[colorIndex + AlphaIndex] = 255;
+
                 }
+                /*
+                else if (player == 2)
+                {
+                    pixels[colorIndex + BlueIndex] = pixelsColor[colorIndex + BlueIndex];
+                    pixels[colorIndex + GreenIndex] = pixelsColor[colorIndex + GreenIndex];
+                    pixels[colorIndex + RedIndex] = pixelsColor[colorIndex + RedIndex];
+                }
+                */
                 else
                 {
-                    //non-player pixels are transparent
                     pixels[colorIndex + BlueIndex] = 0;
                     pixels[colorIndex + GreenIndex] = 0;
-                    pixels[colorIndex + RedIndex] = 0;
+                    pixels[colorIndex + RedIndex] = 0;    
                 }
-
-
             }
             
             return pixels;
         }
 
-
-        private void changeBackground(ConsoleKeyInfo x)
+        public void On_GestureDetected(string gest)
         {
             //List of images:  space(0) aus(1) ball(2)
             //                  hawaii(3) london(4)
             int count = 0;
-            //ConsoleKeyInfo x = Console.ReadKey();
-            if (x.Key.Equals(Key.Left))
+
+
+            //hand to right side
+            if (gest == "SwipeToRight")
             {
                 if (count == 0)
                 {
@@ -144,8 +149,10 @@ namespace final
                     count--;
                     background.Source = images.ElementAt(count);
                 }
+                
             }
-            if (x.Key.Equals(Key.Right))
+            //hand to left side
+            if (gest == "SwipeToLeft")
             {
                 if (count == 4)
                 {
@@ -158,25 +165,7 @@ namespace final
                     background.Source = images.ElementAt(count);
                 }
             }
-            else
-            {
-                //display message
-                MessageBox.Show("Use left or right arrows to change background");
-            }
-        }
 
-        void input()
-        {
-            x = Console.ReadKey();
-            if (x.Key.Equals(Key.Escape))
-            {
-                on = false;
-            }
-            else
-            {
-                changeBackground(x);
-                //x = Console.ReadKey();
-            }
         }
 
         void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -200,11 +189,13 @@ namespace final
                 MaxDeviationRadius = 0.5f
             };
 
-            //            sensor.SkeletonStream.Enable(parameters);
-            //            sensor.SkeletonStream.Enable();
+            sensor.SkeletonStream.Enable(parameters);
+            sensor.SkeletonStream.Enable();
             sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            //            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+            
             sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+           
 
             try
             {
@@ -216,10 +207,6 @@ namespace final
             }
         }
 
-
-        //********************************
-        //Might need to add to this method?
-        //********************************
         void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
         {
             if (closing)
@@ -229,46 +216,43 @@ namespace final
 
             using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
             {
-                if (colorFrame == null)
-                {
-                    return;
+                using (DepthImageFrame depthFrame = e.OpenDepthImageFrame()) {
+
+                    if (colorFrame == null || depthFrame==null )
+                    {
+                        return;
+                    }
+
+                    byte[] pixels = new byte[colorFrame.PixelDataLength];
+
+                    //copy data out into our byte array
+                    colorFrame.CopyPixelDataTo(pixels);
+                    int stride = colorFrame.Width * 4;
+
+                    image1.Source = BitmapSource.Create(colorFrame.Width, colorFrame.Height,
+                        96, 96, PixelFormats.Bgr32, null, pixels, stride);
+
+
+                    byte[] pixelsDepth = GenerateColoredBytes(depthFrame,colorFrame);
+                    int strideDepth = depthFrame.Width * 4;
+
+                    image2.Source = BitmapSource.Create(depthFrame.Width, depthFrame.Height,
+                        96, 96, PixelFormats.Bgra32, null, pixelsDepth, strideDepth);
+
                 }
-
-                byte[] pixels = new byte[colorFrame.PixelDataLength];
-
-                //copy data out into our byte array
-                colorFrame.CopyPixelDataTo(pixels);
-                int stride = colorFrame.Width * 4;
-
-                image1.Source = BitmapSource.Create(colorFrame.Width, colorFrame.Height,
-                    96, 96, PixelFormats.Bgr32, null, pixels, stride);
-
-            }
-
-            using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
-            {
-                if (depthFrame == null)
-                {
-                    return;
-                }
-
-                byte[] pixels = GenerateColoredBytes(depthFrame);
-                int stride = depthFrame.Width * 4;
-
-                image2.Source = BitmapSource.Create(depthFrame.Width, depthFrame.Height,
-                    96, 96, PixelFormats.Bgr32, null, pixels, stride);
-            }
+            }        
 
             //Get a skeleton
-            /*
             Skeleton first = GetFirstSkeleton(e);
 
             if (first == null)
             {
                 return;
             }
-            */
+            
             //set scaled position
+
+
             //ScalePosition(headImage, first.Joints[JointType.Head]);
             //ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             //ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
