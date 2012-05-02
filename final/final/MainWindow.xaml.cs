@@ -30,10 +30,13 @@ namespace final
         BitmapImage hawaii;
         BitmapImage london;
 
-        bool on;
-        ConsoleKeyInfo x;
-
         List<BitmapImage> images;
+
+        Joint right;
+        Joint left;
+        Joint center;
+
+        bool movement = false;
 
         public MainWindow()
         {
@@ -49,9 +52,6 @@ namespace final
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
 
-            /*
-            on = true;
-            */
             Uri src = new Uri(@"space.jpg", UriKind.Relative);
             space = new BitmapImage(src);
             Uri src1 = new Uri(@"australia.jpg", UriKind.Relative);
@@ -128,44 +128,40 @@ namespace final
             return pixels;
         }
 
-        public void On_GestureDetected(string gest)
+        void changeBackground(string dir)
         {
-            //List of images:  space(0) aus(1) ball(2)
-            //                  hawaii(3) london(4)
+            //images:   space (0), aus (1), ball (2)
+            //          hawaii (3), london (4)
+
             int count = 0;
-
-
-            //hand to right side
-            if (gest == "SwipeToRight")
+            
+            if( dir == "right")
             {
-                if (count == 0)
+                if(count == 4)
                 {
-                    count = 4;
                     background.Source = images.ElementAt(count);
-
-                }
-                else
-                {
-                    count--;
-                    background.Source = images.ElementAt(count);
-                }
-                
-            }
-            //hand to left side
-            if (gest == "SwipeToLeft")
-            {
-                if (count == 4)
-                {
                     count = 0;
-                    background.Source = images.ElementAt(count);
                 }
                 else
                 {
-                    count++;
                     background.Source = images.ElementAt(count);
+                    count++;
                 }
             }
-
+            
+            if( dir == "left" )
+            {
+                if(count == 0)
+                {
+                    background.Source = images.ElementAt(count);
+                    count = 4;
+                }
+                else
+                {
+                    background.Source = images.ElementAt(count);
+                    count--;
+                }
+            }
         }
 
         void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -249,10 +245,30 @@ namespace final
             {
                 return;
             }
-            
+
+            string dir = "";
+            //check for hand movement here
+            // if right moves over center, set movement to true and string dir to right
+            // if left moves over center, set movement to true and set dir to left
+            // else, movement is still false.
+
+            if(right.Position.X < center.Position.X)
+            {
+                movement = true;
+                dir = "right";
+            }
+            if( left.Position.X > center.Position.X)
+            {
+                movement = true;
+                dir = "left";
+            }
+
+            if (movement)
+            {
+                changeBackground(dir);
+            }
+
             //set scaled position
-
-
             //ScalePosition(headImage, first.Joints[JointType.Head]);
             //ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             //ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
@@ -261,9 +277,6 @@ namespace final
 
         }
 
-        //********************************
-        //Might need to add to this method?
-        //********************************
         void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
         {
             using (DepthImageFrame depth = e.OpenDepthImageFrame())
@@ -273,6 +286,10 @@ namespace final
                 {
                     return;
                 }
+
+                right = first.Joints[JointType.HandRight];
+                left = first.Joints[JointType.HandLeft];
+                center = first.Joints[JointType.ShoulderCenter];
 
                 //Map a joint location to a point on the depth map
                 //left hand
@@ -294,13 +311,13 @@ namespace final
                     ColorImageFormat.RgbResolution640x480Fps30);
 
 
+
                 //Set location
                 //CameraPosition(headImage, headColorPoint);
                 //CameraPosition(leftEllipse, leftColorPoint);
                 //CameraPosition(rightEllipse, rightColorPoint);
             }
         }
-
 
         Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
         {
