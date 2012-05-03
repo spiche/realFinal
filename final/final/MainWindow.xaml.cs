@@ -128,38 +128,30 @@ namespace final
             return pixels;
         }
 
+
+        int count = 0;
         void changeBackground(string dir)
         {
             //images:   space (0), aus (1), ball (2)
             //          hawaii (3), london (4)
+            label1.Content = dir;
 
-            int count = 0;
-            
-            if( dir == "right")
+            if( dir.Equals("right"))
             {
-                if(count == 4)
-                {
-                    background.Source = images.ElementAt(count);
-                    count = 0;
-                }
-                else
-                {
-                    background.Source = images.ElementAt(count);
-                    count++;
-                }
+
+                background.Source = images.ElementAt(count%5);
+                count++;
+                
             }
             
-            if( dir == "left" )
+            if( dir.Equals("left") )
             {
-                if(count == 0)
+
+                background.Source = images.ElementAt(count%5);
+                count--;
+                if (count < 0)
                 {
-                    background.Source = images.ElementAt(count);
-                    count = 4;
-                }
-                else
-                {
-                    background.Source = images.ElementAt(count);
-                    count--;
+                    count = 0;
                 }
             }
         }
@@ -257,7 +249,7 @@ namespace final
                 movement = true;
                 dir = "right";
             }
-            if( left.Position.X > center.Position.X)
+            if(left.Position.X > center.Position.X)
             {
                 movement = true;
                 dir = "left";
@@ -273,9 +265,10 @@ namespace final
             //ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             //ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
 
-            //GetCameraPoint(first, e);
+            GetCameraPoint(first, e);
 
         }
+        float oldX, oldY;
 
         void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
         {
@@ -290,15 +283,32 @@ namespace final
                 right = first.Joints[JointType.HandRight];
                 left = first.Joints[JointType.HandLeft];
                 center = first.Joints[JointType.ShoulderCenter];
+                
+                float diff = oldX - first.Joints[JointType.ShoulderCenter].Position.X;
 
-                //Map a joint location to a point on the depth map
+                if (diff > .01)
+                {
+                    changeBackground("right");
+                }
+                
+                else if (diff <  -0.01)
+                {
+                    changeBackground("left");
+                }
+                //label1.Content = diff + "";
+                oldX = first.Joints[JointType.ShoulderCenter].Position.X;
+                oldY = first.Joints[JointType.ShoulderCenter].Position.Y;
+                
+                    //Map a joint location to a point on the depth map
                 //left hand
+                
+                
+                
                 DepthImagePoint leftDepthPoint =
                     depth.MapFromSkeletonPoint(first.Joints[JointType.HandLeft].Position);
                 //right hand
                 DepthImagePoint rightDepthPoint =
                     depth.MapFromSkeletonPoint(first.Joints[JointType.HandRight].Position);
-
 
                 //Map a depth point to a point on the color image
                 //left hand
@@ -309,8 +319,6 @@ namespace final
                 ColorImagePoint rightColorPoint =
                     depth.MapToColorImagePoint(rightDepthPoint.X, rightDepthPoint.Y,
                     ColorImageFormat.RgbResolution640x480Fps30);
-
-
 
                 //Set location
                 //CameraPosition(headImage, headColorPoint);

@@ -7,6 +7,7 @@
         <my:KinectSensorChooser HorizontalAlignment="Left" Margin="212,235,0,0" Name="kinectSensorChooser1" VerticalAlignment="Top" Width="328" />
         <Image Height="326" HorizontalAlignment="Left" Name="image1" Stretch="Fill" VerticalAlignment="Top" Width="454" Visibility="Hidden" />
         <Image Height="410" HorizontalAlignment="Left" Name="image2" Stretch="Fill" VerticalAlignment="Top" Width="721" Margin="12,39,0,0" />
+        <Label Content="Label" Height="37" HorizontalAlignment="Left" Margin="612,89,0,0" Name="label1" VerticalAlignment="Top" Width="86" Foreground="Red" Background="#E6000000" />
     </Grid>
 
 </Window>
