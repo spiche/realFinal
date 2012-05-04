@@ -34,3 +34,14 @@ C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Skelet
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.pdb
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\bin\Debug\SkeletalTracking.pdb
 C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.dll
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final.exe
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final.pdb
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\MainWindow.baml
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\MainWindow.g.cs
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\App.g.cs
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final_MarkupCompile.cache
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final.g.resources
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final.Properties.Resources.resources
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\GenerateResource.write.1.tlog
