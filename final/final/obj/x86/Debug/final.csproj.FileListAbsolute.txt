@@ -45,3 +45,9 @@ C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\De
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\final.Properties.Resources.resources
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\GenerateResource.read.1.tlog
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\final.exe
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\final.pdb
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\KinectAudioDemo.vshost.exe
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Microsoft.Expression.Drawing.dll
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.pdb

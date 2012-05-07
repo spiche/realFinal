@@ -16,6 +16,7 @@ using Coding4Fun.Kinect.Wpf;
 using System.IO;
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
+using System.Windows.Threading;
 
 
 namespace final
@@ -38,24 +39,23 @@ namespace final
         Joint left;
         Joint center;
 
-        bool movement = false;
+        //bool movement = false;
 
         private const string AcceptedSpeechPrefix = "Accepted_";
         private const string RejectedSpeechPrefix = "Rejected_";
 
-        //private KinectSensor kinect;
+        private const int WaveImageWidth = 500;
+
+        private KinectSensor kinect;
         //private double angle;
-        private bool running = true;
+        //private bool running = true;
         private DispatcherTimer readyTimer;
-        private EnergyCalculatingPassThroughStream stream;
+        //private EnergyCalculatingPassThroughStream stream;
         private SpeechRecognitionEngine speechRecognizer;
-
-
 
         public MainWindow()
         {
             InitializeComponent();
-
 
         }
 
@@ -138,14 +138,7 @@ namespace final
                     pixels[colorIndex + AlphaIndex] = 255;
 
                 }
-                /*
-                else if (player == 2)
-                {
-                    pixels[colorIndex + BlueIndex] = pixelsColor[colorIndex + BlueIndex];
-                    pixels[colorIndex + GreenIndex] = pixelsColor[colorIndex + GreenIndex];
-                    pixels[colorIndex + RedIndex] = pixelsColor[colorIndex + RedIndex];
-                }
-                */
+
                 else
                 {
                     pixels[colorIndex + BlueIndex] = 0;
@@ -167,13 +160,11 @@ namespace final
             {
 
                 background.Source = images.ElementAt(count%5);
-                count++;
-                
+                count++;   
             }
             
             if( dir.Equals("left") )
             {
-
                 background.Source = images.ElementAt(count%5);
                 count--;
                 if (count < 0)
@@ -235,73 +226,33 @@ namespace final
         {
             var sensor = this.kinect;
             this.speechRecognizer = this.CreateSpeechRecognizer();
-            try
-            {
-                sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-                sensor.Start();
-            }
-            catch (Exception)
-            {
-                SensorChooser.AppConflictOccurred();
-                return;
-            }
 
-            if (this.speechRecognizer != null && sensor != null)
+            if (this.speechRecognizer != null)/*&& sensor != null*/
             {
-                // NOTE: Need to wait 4 seconds for device to be ready to stream audio right after initialization
+                //NOTE: Need to wait 4 seconds for device to be ready to stream audio right after initialization
                 this.readyTimer = new DispatcherTimer();
                 this.readyTimer.Tick += this.ReadyTimerTick;
                 this.readyTimer.Interval = new TimeSpan(0, 0, 4);
                 this.readyTimer.Start();
 
-                this.ReportSpeechStatus("Initializing audio stream...");
-                this.UpdateInstructionsText(string.Empty);
-
-                this.Closing += this.MainWindowClosing;
+                //this.Closing += this.MainWindowClosing;
             }
 
-            this.running = true;
+            //this.running = true;
         }
 
         private void ReadyTimerTick(object sender, EventArgs e)
         {
             this.Start();
-            this.ReportSpeechStatus("Ready to recognize speech!");
-            this.UpdateInstructionsText("Say: 'save'");
             this.readyTimer.Stop();
             this.readyTimer = null;
         }
-
-        private void UninitializeKinect()
-        {
-            var sensor = this.kinect;
-            this.running = false;
-            if (this.speechRecognizer != null && sensor != null)
-            {
-                sensor.AudioSource.Stop();
-                sensor.Stop();
-                this.speechRecognizer.RecognizeAsyncCancel();
-                this.speechRecognizer.RecognizeAsyncStop();
-            }
-
-            if (this.readyTimer != null)
-            {
-                this.readyTimer.Stop();
-                this.readyTimer = null;
-            }
-        }
-
+      
         private SpeechRecognitionEngine CreateSpeechRecognizer()
         {
             RecognizerInfo ri = GetKinectRecognizer();
             if (ri == null)
             {
-                MessageBox.Show(
-                    @"There was a problem initializing Speech Recognition.
-Ensure you have the Microsoft Speech SDK installed.",
-                    "Failed to load Speech SDK",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
                 this.Close();
                 return null;
             }
@@ -313,12 +264,6 @@ Ensure you have the Microsoft Speech SDK installed.",
             }
             catch
             {
-                MessageBox.Show(
-                    @"There was a problem initializing Speech Recognition.
-Ensure you have the Microsoft Speech SDK installed and configured.",
-                    "Failed to load Speech SDK",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
                 this.Close();
                 return null;
             }
@@ -334,65 +279,32 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
 
             sre.LoadGrammar(g);
             sre.SpeechRecognized += this.SreSpeechRecognized;
-            sre.SpeechHypothesized += this.SreSpeechHypothesized;
-            sre.SpeechRecognitionRejected += this.SreSpeechRecognitionRejected;
+            //sre.SpeechHypothesized += this.SreSpeechHypothesized;
+            //sre.SpeechRecognitionRejected += this.SreSpeechRecognitionRejected;
+            //sre.SpeechRecognitionRejected += new
+            //EventHandler<SpeechRecognitionRejectedEventArgs>(sre_SpeechRecognitionRejected);
 
             return sre;
         }
 
-        private void RejectSpeech(RecognitionResult result)
-        {
-            string status = "Rejected: " + (result == null ? string.Empty : result.Text + " " + result.Confidence);
-            this.ReportSpeechStatus(status);
-
-            Dispatcher.BeginInvoke(new Action(() => { tbColor.Background = blackBrush; }), DispatcherPriority.Normal);
-        }
-
-        private void SreSpeechRecognitionRejected(object sender, SpeechRecognitionRejectedEventArgs e)
-        {
-            this.RejectSpeech(e.Result);
-        }
-
-        private void SreSpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
-        {
-            this.ReportSpeechStatus("Hypothesized: " + e.Result.Text + " " + e.Result.Confidence);
-        }
-
         private void SreSpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
-            SolidColorBrush brush;
-
             if (e.Result.Confidence < 0.5)
             {
-                this.RejectSpeech(e.Result);
+                //this.RejectSpeech(e.Result);
                 return;
             }
 
             switch (e.Result.Text.ToUpperInvariant())
             {
                 case "SAVE":
-                    brush = this.redBrush;
+                    savePicture();
                     break;
 
                 //default:
                 //    brush = this.blackBrush;
                 //    break;
             }
-
-            string status = "Recognized: " + e.Result.Text + " " + e.Result.Confidence;
-            this.ReportSpeechStatus(status);
-
-            Dispatcher.BeginInvoke(new Action(() => { tbColor.Background = brush; }), DispatcherPriority.Normal);
-        }
-
-        private void ReportSpeechStatus(string status)
-        {
-            Dispatcher.BeginInvoke(new Action(() => { tbSpeechStatus.Text = status; }), DispatcherPriority.Normal);
-        }
-
-        private void UpdateInstructionsText(string instructions)
-        {
-            Dispatcher.BeginInvoke(new Action(() => { tbColor.Text = instructions; }), DispatcherPriority.Normal);
         }
 
         private void Start()
@@ -400,144 +312,133 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             var audioSource = this.kinect.AudioSource;
             audioSource.BeamAngleMode = BeamAngleMode.Adaptive;
             var kinectStream = audioSource.Start();
-            this.stream = new EnergyCalculatingPassThroughStream(kinectStream);
-            this.speechRecognizer.SetInputToAudioStream(
-                this.stream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+            //this.stream = new EnergyCalculatingPassThroughStream(kinectStream);
+            //this.speechRecognizer.SetInputToAudioStream(
+            //    this.stream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
             this.speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
-            var t = new Thread(this.PollSoundSourceLocalization);
-            t.Start();
+            
+            //t.Start();
         }
 
-        private void EnableAecChecked(object sender, RoutedEventArgs e)
-        {
-            CheckBox enableAecCheckBox = (CheckBox)sender;
-            if (enableAecCheckBox.IsChecked != null)
-            {
-                this.kinect.AudioSource.EchoCancellationMode = enableAecCheckBox.IsChecked.Value
-                                                             ? EchoCancellationMode.CancellationAndSuppression
-                                                             : EchoCancellationMode.None;
-            }
-        }
+        //private class EnergyCalculatingPassThroughStream : Stream
+        //{
+        //    //private const int SamplesPerPixel = 10;
 
-        private class EnergyCalculatingPassThroughStream : Stream
-        {
-            private const int SamplesPerPixel = 10;
+        //    //private readonly double[] energy = new double[WaveImageWidth];
+        //    //private readonly object syncRoot = new object();
+        //    private readonly Stream baseStream;
 
-            private readonly double[] energy = new double[WaveImageWidth];
-            private readonly object syncRoot = new object();
-            private readonly Stream baseStream;
+        //    //private int index;
+        //    //private int sampleCount;
+        //    //private double avgSample;
 
-            private int index;
-            private int sampleCount;
-            private double avgSample;
+        //    //public EnergyCalculatingPassThroughStream(Stream stream)
+        //    //{
+        //    //    this.baseStream = stream;
+        //    //}
 
-            public EnergyCalculatingPassThroughStream(Stream stream)
-            {
-                this.baseStream = stream;
-            }
+        //    //public override long Length
+        //    //{
+        //    //    get { return this.baseStream.Length; }
+        //    //}
 
-            public override long Length
-            {
-                get { return this.baseStream.Length; }
-            }
+        //    //public override long Position
+        //    //{
+        //    //    get { return this.baseStream.Position; }
+        //    //    set { this.baseStream.Position = value; }
+        //    //}
 
-            public override long Position
-            {
-                get { return this.baseStream.Position; }
-                set { this.baseStream.Position = value; }
-            }
+        //    //public override bool CanRead
+        //    //{
+        //    //    get { return this.baseStream.CanRead; }
+        //    //}
 
-            public override bool CanRead
-            {
-                get { return this.baseStream.CanRead; }
-            }
+        //    //public override bool CanSeek
+        //    //{
+        //    //    get { return this.baseStream.CanSeek; }
+        //    //}
 
-            public override bool CanSeek
-            {
-                get { return this.baseStream.CanSeek; }
-            }
+        //    //public override bool CanWrite
+        //    //{
+        //    //    get { return this.baseStream.CanWrite; }
+        //    //}
 
-            public override bool CanWrite
-            {
-                get { return this.baseStream.CanWrite; }
-            }
+        //    //public override void Flush()
+        //    //{
+        //    //    this.baseStream.Flush();
+        //    //}
 
-            public override void Flush()
-            {
-                this.baseStream.Flush();
-            }
+        //    //public void GetEnergy(double[] energyBuffer)
+        //    //{
+        //    //    lock (this.syncRoot)
+        //    //    {
+        //    //        int energyIndex = this.index;
+        //    //        for (int i = 0; i < this.energy.Length; i++)
+        //    //        {
+        //    //            energyBuffer[i] = this.energy[energyIndex];
+        //    //            energyIndex++;
+        //    //            if (energyIndex >= this.energy.Length)
+        //    //            {
+        //    //                energyIndex = 0;
+        //    //            }
+        //    //        }
+        //    //    }
+        //    //}
 
-            public void GetEnergy(double[] energyBuffer)
-            {
-                lock (this.syncRoot)
-                {
-                    int energyIndex = this.index;
-                    for (int i = 0; i < this.energy.Length; i++)
-                    {
-                        energyBuffer[i] = this.energy[energyIndex];
-                        energyIndex++;
-                        if (energyIndex >= this.energy.Length)
-                        {
-                            energyIndex = 0;
-                        }
-                    }
-                }
-            }
+        //    //public override int Read(byte[] buffer, int offset, int count)
+        //    //{
+        //    //    int retVal = this.baseStream.Read(buffer, offset, count);
+        //    //    const double A = 0.3;
+        //    //    lock (this.syncRoot)
+        //    //    {
+        //    //        for (int i = 0; i < retVal; i += 2)
+        //    //        {
+        //    //            short sample = BitConverter.ToInt16(buffer, i + offset);
+        //    //            this.avgSample += sample * sample;
+        //    //            this.sampleCount++;
 
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                int retVal = this.baseStream.Read(buffer, offset, count);
-                const double A = 0.3;
-                lock (this.syncRoot)
-                {
-                    for (int i = 0; i < retVal; i += 2)
-                    {
-                        short sample = BitConverter.ToInt16(buffer, i + offset);
-                        this.avgSample += sample * sample;
-                        this.sampleCount++;
+        //    //            if (this.sampleCount == SamplesPerPixel)
+        //    //            {
+        //    //                this.avgSample /= SamplesPerPixel;
 
-                        if (this.sampleCount == SamplesPerPixel)
-                        {
-                            this.avgSample /= SamplesPerPixel;
+        //    //                this.energy[this.index] = .2 + ((this.avgSample * 11) / (int.MaxValue / 2));
+        //    //                this.energy[this.index] = this.energy[this.index] > 10 ? 10 : this.energy[this.index];
 
-                            this.energy[this.index] = .2 + ((this.avgSample * 11) / (int.MaxValue / 2));
-                            this.energy[this.index] = this.energy[this.index] > 10 ? 10 : this.energy[this.index];
+        //    //                if (this.index > 0)
+        //    //                {
+        //    //                    this.energy[this.index] = (this.energy[this.index] * A) + ((1 - A) * this.energy[this.index - 1]);
+        //    //                }
 
-                            if (this.index > 0)
-                            {
-                                this.energy[this.index] = (this.energy[this.index] * A) + ((1 - A) * this.energy[this.index - 1]);
-                            }
+        //    //                this.index++;
+        //    //                if (this.index >= this.energy.Length)
+        //    //                {
+        //    //                    this.index = 0;
+        //    //                }
 
-                            this.index++;
-                            if (this.index >= this.energy.Length)
-                            {
-                                this.index = 0;
-                            }
+        //    //                this.avgSample = 0;
+        //    //                this.sampleCount = 0;
+        //    //            }
+        //    //        }
+        //    //    }
 
-                            this.avgSample = 0;
-                            this.sampleCount = 0;
-                        }
-                    }
-                }
+        //    //    return retVal;
+        //    //}
 
-                return retVal;
-            }
+        //    //public override long Seek(long offset, SeekOrigin origin)
+        //    //{
+        //    //    return this.baseStream.Seek(offset, origin);
+        //    //}
 
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                return this.baseStream.Seek(offset, origin);
-            }
+        //    //public override void SetLength(long value)
+        //    //{
+        //    //    this.baseStream.SetLength(value);
+        //    //}
 
-            public override void SetLength(long value)
-            {
-                this.baseStream.SetLength(value);
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                this.baseStream.Write(buffer, offset, count);
-            }
-        }
+        //    public override void Write(byte[] buffer, int offset, int count)
+        //    {
+        //        this.baseStream.Write(buffer, offset, count);
+        //    }
+        //}
         
         void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
         {
@@ -701,7 +602,7 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
         {
             closing = true;
             StopKinect(kinectSensorChooser1.Kinect);
-            this.UninitializeKinect();
+            
         }
     }
 }

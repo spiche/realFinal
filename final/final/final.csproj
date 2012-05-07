@@ -40,10 +40,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\KinectforWindowsSDKV1\KinectforWindowsSDKV1\Dependencies\Coding4Fun.Kinect.Wpf.dll</HintPath>
     </Reference>
+    <Reference Include="KinectAudioDemo.vshost">
+      <HintPath>..\..\..\..\KinectforWindowsSDK\KinectforWindowsSDKV1\6.Audio\KinectAudioDemo\Bin\Debug\KinectAudioDemo.vshost.exe</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Kinect, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Samples.Kinect.WpfViewers, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Microsoft.Samples.Kinect.WpfViewers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Speech, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files\Microsoft SDKs\Kinect\v1.0\Samples\bin\Microsoft.Speech.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
