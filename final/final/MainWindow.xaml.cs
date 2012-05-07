@@ -106,6 +106,7 @@ namespace final
             image2.Height = 500;
             image2.Width = 800;
 
+            InitializeKinect();
         }
 
         private byte[] GenerateColoredBytes(DepthImageFrame depthFrame, ColorImageFrame colorFrame)
@@ -176,9 +177,9 @@ namespace final
 
         private void savePicture()
         {
-            BitmapSource image = (BitmapSource)image2.Source;
-
-            image.Save(DateTime.Now.ToString("ddMMyyyy HHmmss") + ".jpg", ImageFormat.Jpeg);
+            //BitmapSource image = (BitmapSource)image2.Source;
+            BitmapSource image = (BitmapSource)window.Content;
+            image.Save(DateTime.Now.ToString("ddMMyyyy_HHmmss") + ".jpg", ImageFormat.Jpeg);
         }
 
         void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -186,9 +187,9 @@ namespace final
             KinectSensor old = (KinectSensor)e.OldValue;
             StopKinect(old);
 
-            KinectSensor sensor = (KinectSensor)e.NewValue;
+            kinect = (KinectSensor)e.NewValue;
 
-            if (sensor == null)
+            if (kinect == null)
             {
                 return;
             }
@@ -202,19 +203,19 @@ namespace final
                 MaxDeviationRadius = 0.5f
             };
 
-            sensor.SkeletonStream.Enable(parameters);
-            sensor.SkeletonStream.Enable();
-            sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            
-            sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+            kinect.SkeletonStream.Enable(parameters);
+            kinect.SkeletonStream.Enable();
+            kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
+
+            kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+            kinect.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
 
             //// Only enable this checkbox if we have a sensor
             //enableAec.IsEnabled = this.kinect != null;
 
             try
             {
-                sensor.Start();
+                kinect.Start();
             }
             catch (System.IO.IOException)
             {
@@ -270,6 +271,7 @@ namespace final
 
             var grammar = new Choices();
             grammar.Add("save");
+            
 
             var gb = new GrammarBuilder { Culture = ri.Culture };
             gb.Append(grammar);
@@ -289,6 +291,7 @@ namespace final
 
         private void SreSpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
+            label1.Content = "recognized";
             if (e.Result.Confidence < 0.5)
             {
                 //this.RejectSpeech(e.Result);
@@ -310,11 +313,11 @@ namespace final
         private void Start()
         {
             var audioSource = this.kinect.AudioSource;
-            audioSource.BeamAngleMode = BeamAngleMode.Adaptive;
+            //audioSource.BeamAngleMode = BeamAngleMode.Adaptive;
             var kinectStream = audioSource.Start();
             //this.stream = new EnergyCalculatingPassThroughStream(kinectStream);
-            //this.speechRecognizer.SetInputToAudioStream(
-            //    this.stream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+            this.speechRecognizer.SetInputToAudioStream(
+                kinectStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
             this.speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
             
             //t.Start();
@@ -603,6 +606,11 @@ namespace final
             closing = true;
             StopKinect(kinectSensorChooser1.Kinect);
             
+        }
+
+        private void saveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            savePicture();
         }
     }
 }
