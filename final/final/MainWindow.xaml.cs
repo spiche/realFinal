@@ -14,6 +14,9 @@ using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Coding4Fun.Kinect.Wpf;
 using System.IO;
+using Microsoft.Speech.Recognition;
+using System.Windows.Threading;
+using Microsoft.Speech.AudioFormat;
 
 
 namespace final
@@ -49,6 +52,11 @@ namespace final
         int count = 0;
         float oldX, oldY;
 
+        private DispatcherTimer readyTimer;
+        //private EnergyCalculatingPassThroughStream stream;
+        private SpeechRecognitionEngine speechRecognizer;
+        private KinectSensor kinect;
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
@@ -78,7 +86,153 @@ namespace final
             image2.Height = 500;
             image2.Width = 800;
 
+            InitializeKinect();
+
         }
+
+
+        void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            KinectSensor old = (KinectSensor)e.OldValue;
+            StopKinect(old);
+
+            kinect = (KinectSensor)e.NewValue;
+
+            if (kinect == null)
+            {
+                return;
+            }
+
+            var parameters = new TransformSmoothParameters
+            {
+                Smoothing = 0.3f,
+                Correction = 0.0f,
+                Prediction = 0.0f,
+                JitterRadius = 1.0f,
+                MaxDeviationRadius = 0.5f
+            };
+
+            kinect.SkeletonStream.Enable(parameters);
+            kinect.SkeletonStream.Enable();
+            kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
+
+            kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+            kinect.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+
+            //// Only enable this checkbox if we have a sensor
+            //enableAec.IsEnabled = this.kinect != null;
+
+            try
+            {
+                kinect.Start();
+            }
+            catch (System.IO.IOException)
+            {
+                kinectSensorChooser1.AppConflictOccurred();
+            }
+        }
+
+        private void InitializeKinect()
+        {
+            var sensor = this.kinect;
+            this.speechRecognizer = this.CreateSpeechRecognizer();
+
+            if (this.speechRecognizer != null)/*&& sensor != null*/
+            {
+                //NOTE: Need to wait 4 seconds for device to be ready to stream audio right after initialization
+                this.readyTimer = new DispatcherTimer();
+                this.readyTimer.Tick += this.ReadyTimerTick;
+                this.readyTimer.Interval = new TimeSpan(0, 0, 4);
+                this.readyTimer.Start();
+
+                //this.Closing += this.MainWindowClosing;
+            }
+
+            //this.running = true;
+        }
+
+        private void ReadyTimerTick(object sender, EventArgs e)
+        {
+            this.Start();
+            this.readyTimer.Stop();
+            this.readyTimer = null;
+        }
+
+        private SpeechRecognitionEngine CreateSpeechRecognizer()
+        {
+            RecognizerInfo ri = GetKinectRecognizer();
+            if (ri == null)
+            {
+                this.Close();
+                return null;
+            }
+
+            SpeechRecognitionEngine sre;
+            try
+            {
+                sre = new SpeechRecognitionEngine(ri.Id);
+            }
+            catch
+            {
+                this.Close();
+                return null;
+            }
+
+            var grammar = new Choices();
+            grammar.Add("save");
+
+
+            var gb = new GrammarBuilder { Culture = ri.Culture };
+            gb.Append(grammar);
+
+            // Create the actual Grammar instance, and then load it into the speech recognizer.
+            var g = new Grammar(gb);
+
+            sre.LoadGrammar(g);
+            sre.SpeechRecognized += this.SreSpeechRecognized;
+            //sre.SpeechHypothesized += this.SreSpeechHypothesized;
+            //sre.SpeechRecognitionRejected += this.SreSpeechRecognitionRejected;
+            //sre.SpeechRecognitionRejected += new
+            //EventHandler<SpeechRecognitionRejectedEventArgs>(sre_SpeechRecognitionRejected);
+
+            return sre;
+        }
+
+        private void SreSpeechRecognized(object sender, SpeechRecognizedEventArgs e)
+        {
+            //label1.Content = "recognized";
+            if (e.Result.Confidence < 0.5)
+            {
+                //this.RejectSpeech(e.Result);
+                return;
+            }
+
+            switch (e.Result.Text.ToUpperInvariant())
+            {
+                case "SAVE":
+                    savePicture();
+                    break;
+
+                //default:
+                //    brush = this.blackBrush;
+                //    break;
+            }
+        }
+
+        private void Start()
+        {
+            var audioSource = this.kinect.AudioSource;
+            //audioSource.BeamAngleMode = BeamAngleMode.Adaptive;
+            var kinectStream = audioSource.Start();
+            //this.stream = new EnergyCalculatingPassThroughStream(kinectStream);
+            this.speechRecognizer.SetInputToAudioStream(
+                kinectStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+            this.speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
+
+            //t.Start();
+        }
+
+
 
         private byte[] GenerateColoredBytes(DepthImageFrame depthFrame, ColorImageFrame colorFrame)
         {
@@ -155,6 +309,19 @@ namespace final
             }
         }
 
+        
+        private static RecognizerInfo GetKinectRecognizer()
+        {
+            Func<RecognizerInfo, bool> matchingFunc = r =>
+            {
+                string value;
+                r.AdditionalInfo.TryGetValue("Kinect", out value);
+                return "True".Equals(value, StringComparison.InvariantCultureIgnoreCase) && "en-US".Equals(r.Culture.Name, StringComparison.InvariantCultureIgnoreCase);
+            };
+            return SpeechRecognitionEngine.InstalledRecognizers().Where(matchingFunc).FirstOrDefault();
+        }
+
+
         private void savePicture()
         {
             /*
@@ -184,46 +351,6 @@ namespace final
                 encoder.Save(stream);
                 return stream.ToArray();
             }
-        }
-
-        void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            KinectSensor old = (KinectSensor)e.OldValue;
-            StopKinect(old);
-
-            KinectSensor sensor = (KinectSensor)e.NewValue;
-
-            if (sensor == null)
-            {
-                return;
-            }
-
-            var parameters = new TransformSmoothParameters
-            {
-                Smoothing = 0.3f,
-                Correction = 0.0f,
-                Prediction = 0.0f,
-                JitterRadius = 1.0f,
-                MaxDeviationRadius = 0.5f
-            };
-
-            sensor.SkeletonStream.Enable(parameters);
-            sensor.SkeletonStream.Enable();
-            sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            
-            sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
-           
-
-            try
-            {
-                sensor.Start();
-            }
-            catch (System.IO.IOException)
-            {
-                kinectSensorChooser1.AppConflictOccurred();
-            }
-            
         }
 
         void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
