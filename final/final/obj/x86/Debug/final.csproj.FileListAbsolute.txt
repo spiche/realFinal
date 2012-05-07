@@ -51,3 +51,4 @@ C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Microsoft.Expression.Drawing.dll
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Coding4Fun.Kinect.Wpf.pdb
 C:\Users\Jenell\Desktop\classes\COS377\finalproject\final\final\final\bin\Debug\Microsoft.Samples.Kinect.WpfViewers.pdb
+C:\Users\Shelby\Documents\MAINE\Kinect\Projects\Final\finalProject\final\final\bin\Debug\Microsoft.Speech.dll
